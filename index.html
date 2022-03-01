@@ -4,20 +4,2364 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+		<title>Coroutines in C++20</title>
 
 		<link rel="stylesheet" href="dist/reset.css">
 		<link rel="stylesheet" href="dist/reveal.css">
-		<link rel="stylesheet" href="dist/theme/black.css">
+		<link rel="stylesheet" href="dist/theme/moon.css">
+		<link rel="stylesheet" href="css/mic.css">
 
 		<!-- Theme used for syntax highlighted code -->
-		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<link rel="stylesheet" href="css/mic-highlight.css">
+		<!-- link rel="stylesheet" href="plugin/highlight/.css"> -->
 	</head>
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+				<section>
+					<h3>Coroutinen in C++20</h3>
+					Michael Becker
+				</section>
+				<section>
+					<h3>Was sind Coroutinen ?</h3>
+					<ul style="font-size: 70%">
+						<li class="fragment">Verallgemeinerung von Subroutinen</li>
+						<ul>
+							<li class="fragment">Coroutinen können unterbrochen und später wieder fortgesetzt werden</li>
+							<li class="fragment">Subroutinen sind ein Spezialfall von Coroutinen</li>
+							<li class="fragment">dennoch sind in C++ Coroutinen normale Funktionen</li>
+							<ul>
+								<li class="fragment">Die Eigenschaft 'Coroutine' ist ein Implementation-Detail</li>
+							</ul>
+						</ul>
+					</ul>
+				</section>
+				<section data-auto-animate>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					auto find(std::vector<int> const& v, int x) -> int {
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								return i;
+						}
+						return -1;
+					}
+					</script></code></pre>
+				</section>
+				<section data-auto-animate>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					auto find(std::vector<int> const& v, int x) -> int {
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								return i;
+						}
+						return -1;
+					}
+
+					void bar() {
+						std::vector<int> v = {1, 3, 3, 7};
+						int pos = find(v, 3);
+						std::cout << pos << std::endl;
+					}
+					</script></code></pre>
+				</section>
+				<section data-auto-animate>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					auto find(std::vector<int> const& v, int x) -> int {
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								return i;
+						}
+						return -1;
+					}
+
+					void bar() {
+						std::vector<int> v = {1, 3, 3, 7};
+						int pos = find(v, 3);
+						std::cout << pos << std::endl; // outputs: 1
+					}
+					</script></code></pre>
+				</section>
+				<section data-auto-animate>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="11-12"><script type="text/template">
+					auto find(std::vector<int> const& v, int x) -> int {
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								return i;
+						}
+						return -1;
+					}
+
+					void bar() {
+						std::vector<int> v = {1, 3, 3, 7};
+						int pos = find(v, 3);
+						std::cout << pos << std::endl;
+					}
+					</script></code></pre>
+				</section>
+				<section data-auto-animate>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="11-13|1"><script type="text/template">
+					auto find(std::vector<int> const& v, int x) -> int {
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								return i;
+						}
+						return -1;
+					}
+
+					void bar() {
+						std::vector<int> v = {1, 3, 3, 7};
+						for(int pos : find(v, 3)){
+							std::cout << pos << std::endl;
+						}
+					}
+					</script></code></pre>
+				</section>
+				<section data-auto-animate>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="1|4"><script type="text/template">
+					auto find(std::vector<int> const& v, int x) -> generator<int> {
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								return i;
+						}
+						return -1;
+					}
+
+					void bar() {
+						std::vector<int> v = {1, 3, 3, 7};
+						for(int pos : find(v, 3)){
+							std::cout << pos << std::endl;
+						}
+					}
+					</script></code></pre>
+				</section>
+				<section data-auto-animate>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="4|6"><script type="text/template">
+					auto find(std::vector<int> const& v, int x) -> generator<int> {
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								co_yield i;
+						}
+						return -1;
+					}
+
+					void bar() {
+						std::vector<int> v = {1, 3, 3, 7};
+						for(int pos : find(v, 3)){
+							std::cout << pos << std::endl;
+						}
+					}
+					</script></code></pre>
+				</section>
+				<section data-auto-animate>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					auto find(std::vector<int> const& v, int x) -> generator<int> {
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								co_yield i;
+						}
+					}
+
+					void bar() {
+						std::vector<int> v = {1, 3, 3, 7};
+						for(int pos : find(v, 3)){
+							std::cout << pos << std::endl;
+						}
+					}
+					</script></code></pre>
+				</section>
+				<section data-auto-animate>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					auto find(std::vector<int> const& v, int x) -> generator<int> {
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								co_yield i;
+						}
+					}
+
+					void bar() {
+						std::vector<int> v = {1, 3, 3, 7};
+						for(int pos : find(v, 3)){
+							std::cout << pos << std::endl;
+						}
+					}
+					</script></code></pre>
+					<span style="font-size: 70%"><code>generator&lt;int&gt;</code> macht <code>find</code> zu einer Genteratorfunktion</span>
+				</section>
+
+				<section>
+					<h3>Exkurs: Function-Stack</h3>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="stack-vis.subroutine">
+					<h4>Subroutine</h4>
+					<div style="width: 55%; display: inline-block; vertical-align: bottom">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="|11|1-7|4,6|11|" data-fragment-index="1"><script type="text/template">
+						int find(std::vector<int> const& v, int x){
+							for(int i=0; i<v.size(); ++i){
+								if(v[i] == x)
+									return i;
+							}
+							return -1;
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							int pos = find(v, 3);
+							std::cout << pos << std::endl;
+						}
+					</script></code></pre>
+					</div>
+					<div style="width:20%; display: inline-block; vertical-align: bottom">
+						<div class="program_stack" style="width: 100%">
+							<div class="fragment fade-down" data-fragment-index="2">
+							<div class="stack_frame fragment fade-out" data-fragment-index="4">
+								<div class="function_name">find(..)</div>
+								<div class="function_parameter">std::vector&lt;int&gt; const&amp; v</div>
+								<div class="function_parameter">int x</div>
+								<div class="function_parameter">int i</div>
+							</div>
+							</div>
+							<div class="stack_frame" data-id="bar">
+								<div class="function_name">bar()</div>
+								<div class="function_parameter">std::vector&lt;int&gt; v</div>
+								<div class="function_parameter">int pos</div>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="stack-vis.subroutine">
+					<h4>Subroutine</h4>
+					<div style="width: 55%; display: inline-block; vertical-align: bottom">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						int find(std::vector<int> const& v, int x){
+							for(int i=0; i<v.size(); ++i){
+								if(v[i] == x)
+									return i;
+							}
+							return -1;
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							int pos = find(v, 3);
+							std::cout << pos << std::endl;
+						}
+					</script></code></pre>
+					</div>
+					<div style="width:20%; display: inline-block; vertical-align: bottom">
+						<div class="program_stack" style="width: 100%">
+							<div class="stack_frame" data-id="bar">
+								<div class="function_name">bar()</div>
+								<div class="function_parameter">std::vector&lt;int&gt; v</div>
+								<div class="function_parameter">int pos</div>
+							</div>
+						</div>
+					</div>
+					<p style="font-size: 80%">
+					Stack-Frame wird nach Beendigung der Funktion entfernt
+					</p>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="stack-vis.coro">
+					<h4>Coroutine</h4>
+					<div style="width: 55%; display: inline-block; vertical-align: bottom">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="|12|1-8|6" data-fragment-index="1"><script type="text/template">
+					auto find(std::vector<int> const& v, int x)
+						-> generator<int>
+					{
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								co_yield i;
+						}
+					}
+
+					void bar() {
+						std::vector<int> v = {1, 3, 3, 7};
+						for(int pos : find(v, 3)){
+							std::cout << pos << std::endl;
+						}
+					}
+					</script></code></pre>
+					</div>
+					<div style="width:44%; display: inline-block; vertical-align: bottom">
+						<div class="program_stack" style="width: 45%">
+							<div class="fragment fade-down" data-fragment-index="2">
+							<div class="stack_frame" style="width: 180px; position:relative; left: 0px" data-id="find">
+								<div class="function_name">find(..)</div>
+								<div class="function_parameter">std::vector&lt;int&gt; const&amp; v</div>
+								<div class="function_parameter">int x</div>
+								<div class="function_parameter">int i</div>
+							</div>
+							</div>
+							<div class="stack_frame" style="width: 180px"data-id="bar">
+								<div class="function_name">bar()</div>
+								<div class="function_parameter">std::vector&lt;int&gt; v</div>
+								<div class="function_parameter">int pos</div>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="stack-vis.coro">
+					<h4>Coroutine</h4>
+					<div style="width: 55%; display: inline-block; vertical-align: bottom">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="12|13|12"><script type="text/template">
+					auto find(std::vector<int> const& v, int x)
+						-> generator<int>
+					{
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								co_yield i;
+						}
+					}
+
+					void bar() {
+						std::vector<int> v = {1, 3, 3, 7};
+						for(int pos : find(v, 3)){
+							std::cout << pos << std::endl;
+						}
+					}
+					</script></code></pre>
+					</div>
+					<div style="width:44%; display: inline-block; vertical-align: bottom">
+						<div class="program_stack">
+							<div class="stack_frame" style="width: 180px; position:relative; left: 250px" data-id="find">
+								<div class="function_name">find(..)</div>
+								<div class="function_parameter">std::vector&lt;int&gt; const&amp; v</div>
+								<div class="function_parameter">int x</div>
+								<div class="function_parameter">int i</div>
+							</div>
+							<div class="stack_frame" style="width: 180px" data-id="bar">
+								<div class="function_name">bar()</div>
+								<div class="function_parameter">std::vector&lt;int&gt; v</div>
+								<div class="function_parameter">int pos</div>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="stack-vis.coro">
+					<h4>Coroutine</h4>
+					<div style="width: 55%; display: inline-block; vertical-align: bottom">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="6|4|5|6"><script type="text/template">
+					auto find(std::vector<int> const& v, int x)
+						-> generator<int>
+					{
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								co_yield i;
+						}
+					}
+
+					void bar() {
+						std::vector<int> v = {1, 3, 3, 7};
+						for(int pos : find(v, 3)){
+							std::cout << pos << std::endl;
+						}
+					}
+					</script></code></pre>
+					</div>
+					<div style="width:44%; display: inline-block; vertical-align: bottom">
+						<div class="program_stack">
+							<div class="stack_frame" style="width: 180px;" data-id="find">
+								<div class="function_name">find(..)</div>
+								<div class="function_parameter">std::vector&lt;int&gt; const&amp; v</div>
+								<div class="function_parameter">int x</div>
+								<div class="function_parameter">int i</div>
+							</div>
+							<div class="stack_frame" style="width: 180px" data-id="bar">
+								<div class="function_name">bar()</div>
+								<div class="function_parameter">std::vector&lt;int&gt; v</div>
+								<div class="function_parameter">int pos</div>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="stack-vis.coro">
+					<h4>Coroutine</h4>
+					<div style="width: 55%; display: inline-block; vertical-align: bottom">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="12|"><script type="text/template">
+					auto find(std::vector<int> const& v, int x)
+						-> generator<int>
+					{
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								co_yield i;
+						}
+					}
+
+					void bar() {
+						std::vector<int> v = {1, 3, 3, 7};
+						for(int pos : find(v, 3)){
+							std::cout << pos << std::endl;
+						}
+					}
+					</script></code></pre>
+					</div>
+					<div style="width:44%; display: inline-block; vertical-align: bottom">
+						<div class="program_stack">
+							<div class="stack_frame" style="width: 180px; margin-left: 250px" data-id="find">
+								<div class="function_name">find(..)</div>
+								<div class="function_parameter">std::vector&lt;int&gt; const&amp; v</div>
+								<div class="function_parameter">int x</div>
+								<div class="function_parameter">int i</div>
+							</div>
+							<div class="stack_frame" style="width: 180px" data-id="bar">
+								<div class="function_name">bar()</div>
+								<div class="function_parameter">std::vector&lt;int&gt; v</div>
+								<div class="function_parameter">int pos</div>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="stack-vis.coro">
+					<h4>Coroutine</h4>
+					<div style="width: 55%; display: inline-block; vertical-align: bottom">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					auto find(std::vector<int> const& v, int x)
+						-> generator<int>
+					{
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								co_yield i;
+						}
+					}
+
+					void bar() {
+						std::vector<int> v = {1, 3, 3, 7};
+						for(int pos : find(v, 3)){
+							std::cout << pos << std::endl;
+						}
+					}
+					</script></code></pre>
+					</div>
+					<div style="width:44%; display: inline-block; vertical-align: bottom">
+						<div class="program_stack">
+							<div class="stack_frame" style="width: 180px; margin-left: 250px" data-id="find">
+								<div class="function_name">find(..)</div>
+								<div class="function_parameter">std::vector&lt;int&gt; const&amp; v</div>
+								<div class="function_parameter">int x</div>
+								<div class="function_parameter">int i</div>
+							</div>
+							<div class="stack_frame" style="width: 180px" data-id="bar">
+								<div class="function_name">bar()</div>
+								<div class="function_parameter">std::vector&lt;int&gt; v</div>
+								<div class="function_parameter">int pos</div>
+							</div>
+						</div>
+					</div>
+					<p style="font-size: 80%">
+					Stack-Frame bleibt erhalten, wenn die Coroutine unterbrochen wird
+					</p>
+				</section>
+
+				<section>
+					<h3>Exkurs: Coroutinen in C++17</h3>
+					<span class="fragment">.. oder sogar in C++98</span>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers data-fragment-index="1"><script type="text/template">
+						auto find(std::vector<int> const& v, int x) -> generator<int> {
+							for(int i = 0; i < v.size(); ++i){
+								if(v[i] == x){
+									co_yield i;
+								}
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							for(int pos : find(v, 3)){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="1-5|7" data-fragment-index="1"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+						};
+
+						auto find(std::vector<int> const& v, int x) -> generator<int> {
+							for(int i = 0; i < v.size(); ++i){
+								if(v[i] == x){
+									co_yield i;
+								}
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							for(int pos : find(v, 3)){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="7|8-12" data-fragment-index="1"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+						};
+
+						auto find(frame& f) -> generator<int> {
+							for(int i = 0; i < v.size(); ++i){
+								if(v[i] == x){
+									co_yield i;
+								}
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							for(int pos : find(v, 3)){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="8-12" data-fragment-index="1"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+						};
+
+						auto find(frame& f) -> generator<int> {
+							for(f.i = 0; f.i < f.v.size(); ++f.i){
+								if(f.v[f.i] == f.x){
+									co_yield f.i;
+								}
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							for(int pos : find(v, 3)){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="5|11" data-fragment-index="1"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+							int yield_value;
+						};
+
+						auto find(frame& f) -> generator<int> {
+							for(f.i = 0; f.i < f.v.size(); ++f.i){
+								if(f.v[f.i] == f.x){
+									co_yield f.i;
+								}
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							for(int pos : find(v, 3)){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="11"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+							int yield_value;
+						};
+
+						auto find(frame& f) -> generator<int> {
+							for(f.i = 0; f.i < f.v.size(); ++f.i){
+								if(f.v[f.i] == f.x){
+									f.yield_value = f.i;
+								}
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							for(int pos : find(v, 3)){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="12|8"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+							int yield_value;
+						};
+
+						auto find(frame& f) -> generator<int> {
+							for(f.i = 0; f.i < f.v.size(); ++f.i){
+								if(f.v[f.i] == f.x){
+									f.yield_value = f.i;
+									return;
+								}
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							for(int pos : find(v, 3)){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="8|8-15|1-6"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+							int yield_value;
+						};
+
+						void find(frame& f) {
+							for(f.i = 0; f.i < f.v.size(); ++f.i){
+								if(f.v[f.i] == f.x){
+									f.yield_value = f.i;
+									return;
+								}
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							for(int pos : find(v, 3)){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu" data-transition="none">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="6|9-16"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+							int yield_value;
+							int section = 0;
+						};
+
+						void find(frame& f) {
+							for(f.i = 0; f.i < f.v.size(); ++f.i){
+								if(f.v[f.i] == f.x){
+									f.yield_value = f.i;
+									return;
+								}
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							for(int pos : find(v, 3)){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu.2" data-transition="none">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="10-17"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+							int yield_value;
+							int section = 0;
+						};
+
+						void find(frame& f) {
+							switch(f.section){
+								for(f.i = 0; f.i < f.v.size(); ++f.i){
+									if(f.v[f.i] == f.x){
+										f.yield_value = f.i;
+										return;
+									}
+								}
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							for(int pos : find(v, 3)){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu.2" data-transition="none">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="11"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+							int yield_value;
+							int section = 0;
+						};
+
+						void find(frame& f) {
+							switch(f.section){
+							case 0:
+								for(f.i = 0; f.i < f.v.size(); ++f.i){
+									if(f.v[f.i] == f.x){
+										f.yield_value = f.i;
+										return;
+									}
+								}
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							for(int pos : find(v, 3)){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu.2" data-transition="none">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="16"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+							int yield_value;
+							int section = 0;
+						};
+
+						void find(frame& f) {
+							switch(f.section){
+							case 0:
+								for(f.i = 0; f.i < f.v.size(); ++f.i){
+									if(f.v[f.i] == f.x){
+										f.yield_value = f.i;
+										return;
+							case 1:;
+									}
+								}
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							for(int pos : find(v, 3)){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu.2" data-transition="none">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="15,20||24-29"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+							int yield_value;
+							int section = 0;
+						};
+
+						void find(frame& f) {
+							switch(f.section){
+							case 0:
+								for(f.i = 0; f.i < f.v.size(); ++f.i){
+									if(f.v[f.i] == f.x){
+										f.yield_value = f.i;
+										f.section = 1;
+										return;
+							case 1:;
+									}
+								}
+								f.section = 2;
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							for(int pos : find(v, 3)){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu.2" data-transition="none">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="26|27"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+							int yield_value;
+							int section = 0;
+						};
+
+						void find(frame& f) {
+							switch(f.section){
+							case 0:
+								for(f.i = 0; f.i < f.v.size(); ++f.i){
+									if(f.v[f.i] == f.x){
+										f.yield_value = f.i;
+										f.section = 1;
+										return;
+							case 1:;
+									}
+								}
+								f.section = 2;
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							auto f = frame{v, 3};
+							for(int pos : find(v, 3)){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu.2" data-transition="none">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="27"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+							int yield_value;
+							int section = 0;
+						};
+
+						void find(frame& f) {
+							switch(f.section){
+							case 0:
+								for(f.i = 0; f.i < f.v.size(); ++f.i){
+									if(f.v[f.i] == f.x){
+										f.yield_value = f.i;
+										f.section = 1;
+										return;
+							case 1:;
+									}
+								}
+								f.section = 2;
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							auto f = frame{v, 3};
+							while(f.section != 2){
+								std::cout << pos << std::endl;
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_emu.2">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="27,30|"><script type="text/template">
+						struct frame{
+							std::vector<int> const& v;
+							int x;
+							int i;
+							int yield_value;
+							int section = 0;
+						};
+
+						void find(frame& f) {
+							switch(f.section){
+							case 0:
+								for(f.i = 0; f.i < f.v.size(); ++f.i){
+									if(f.v[f.i] == f.x){
+										f.yield_value = f.i;
+										f.section = 1;
+										return;
+							case 1:;
+									}
+								}
+								f.section = 2;
+							}
+						}
+
+						void bar() {
+							std::vector<int> v = {1, 3, 3, 7};
+							auto f = frame{v, 3};
+							find(f);
+							while(f.section != 2){
+								std::cout << f.yield_value << std::endl;
+								find(f);
+							}
+						}
+					</script></code></pre>
+				</section>
+
+				<section>
+					<h3>Coroutinen in C++20</h3>
+					<span class="fragment">nicht weniger verbose</span><br />
+					<span class="fragment">.. dafür aber aufgeräumter</span><br />
+					<span class="fragment">.. more failproof</span>
+				</section>
+
+				<section>
+					<h4 class="mic">Wann is ein Funktion eine Coroutine ?</h4>
+					<div style="font-size: 70%">
+					<p>Eine Funktion ist eine Coroutine, wenn ..</p>
+					<p><ul>
+						<li>.. <code class="inline">co_await</code></li>
+						<li>.. <code class="inline">co_yield</code></li>
+						<li>.. und/oder <code class="inline">co_return</code></li>
+					</ul></p>
+					<p>.. in ihrer Definition verwendet wird.</p>
+					</div>
+				</section>
+
+				<section>
+					<h4 class="mic">Was macht <code class="inline">co_await</code> eigentlich?</h4>
+					<div style="width: 45%; display: inline-block; vertical-align: top">
+					<p style="font-size: 70%">Expression</p>
+					<pre><code class="c++" data-trim data-line-numbers><script type="text/template">
+						auto result = co_await <expr>;
+					</script></code></pre>
+					</div>
+					<div style="width:54%; display: inline-block; vertical-align: top">
+					<p style="font-size: 70%">Compiler generiert</p>
+					<pre><code class="c++" data-trim data-line-numbers><script type="text/template">
+						auto&& __a = <expr>;
+						if(__a.await_ready() == false){
+							__a.await_suspend(<coroutine_handle>);
+							// suspension point
+						}
+						auto result = __a.await_resume();
+					</script></code></pre>
+					</div>
+				</section>
+
+				<section>
+					<pre><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct awaitable_concept
+						{
+							bool await_ready();
+							void await_suspend(std::coroutine_handle<>);
+							auto await_resume(); // co_await evaluates to this return type
+						};
+					</script></code></pre>
+					<div style="font-size: 70%; text-align: left">
+					Customization-Point
+					<ul>
+						<li>erlaubt den Suspension-/Resume-Vorgang zu koordinieren</li>
+						<li><code class="inline">await_ready</code>: soll die Coroutine unterbrochen werden?</li>
+						<li><code class="inline">await_suspend</code>: bereitet Unterbrechung vor</li>
+						<li><code class="inline">await_resume</code>: bereitet Fortführung vor</li>
+					</ul>
+					</div>
+				</section>
+
+				<section>
+					<pre><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct std::suspend_always
+						{
+							bool await_ready() noexcept { return false; }
+							void await_suspend(std::coroutine_handle<>) noexcept { }
+							void await_resume() noexcept { }
+						};
+					</script></code></pre>
+				</section>
+
+				<section>
+					<pre><code class="c++" data-trim data-line-numbers><script type="text/template">
+						my_type my_coroutine()
+						{
+							std::cout << "Hello" << std::endl;
+							co_await std::suspend_always{};
+							std::cout << "Coroutine" << std::endl;
+						}
+					</script></code></pre>
+				</section>
+
+				<section>
+					<pre><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct std::suspend_never
+						{
+							bool await_ready() noexcept { return true; }
+							void await_suspend(std::coroutine_handle<>) noexcept { }
+							void await_resume() noexcept { }
+						};
+					</script></code></pre>
+				</section>
+
+				<section>
+					<pre><code class="c++" data-trim data-line-numbers><script type="text/template">
+						my_type my_coroutine()
+						{
+							std::cout << "Hello" << std::endl;
+							co_await std::suspend_never{};
+							std::cout << "Coroutine" << std::endl;
+						}
+					</script></code></pre>
+				</section>
+
+				<section>
+					<p>Beispiel</p>
+					<div style="width: 55%; display: inline-block; vertical-align: top">
+					<pre><code class="c++" data-trim data-line-numbers><script type="text/template">
+					auto coro() -> my_resumable {
+						cout << "Hello\n";
+						co_await suspend_always{};
+						cout << "Coroutine\n";
+					}
+
+					void foo() {
+						cout << "-start-\n";
+						my_resumable r = coro();
+						cout << "-resume-\n";
+						r.resume();
+						cout << "-end-\n";
+					}
+					</script></code></pre>
+					</div>
+					<div style="width:44%; display: inline-block; vertical-align: bottom">
+					<pre><code class="language-plaintext" style="background: rgb(30, 30, 30)" data-trim>
+					-start-
+					Hello
+					-resume-
+					Coroutine
+					-end-
+					</code></pre>
+					</div>
+				</section>
+
+				<section>
+					<div style="font-size: 80%">
+					<h4 class="mic">Was passiert beim Aufruf einer Coroutine?</h4>
+					<p class="fragment" data-fragment-index="1">Compiler erzeugt Speicher für das Coroutine-Frame:</p>
+					<ul>
+						<li class="fragment" data-fragment-index="1">Funktionsparameter</li>
+						<li class="fragment" data-fragment-index="1">lokale Variablen</li>
+						<li class="fragment" data-fragment-index="2">weiteren Speicher (temporäre Variable, Register, ..) </li>
+						<li class="fragment" data-fragment-index="3">Suspension-Point</li>
+						<li class="fragment" data-fragment-index="4">Promise-Objekt</li>
+					</ul>
+					<p class="fragment" data-fragment-index="5">Zugriff durch <code class="inline">std::coroutine_handle<..></code></p>
+					</div>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable
+						{
+							struct promise_type; // required
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+							handle_type _handle;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+							my_resumable() = default;
+
+							my_resumable(handle_type h) : _handle(h) { }
+
+							~my_resumable() { if(_handle) _handle.destroy(); }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+							handle_type _handle;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+							my_resumable() = default;
+
+							my_resumable(handle_type h) : _handle(h) { }
+
+							~my_resumable() { if(_handle) _handle.destroy(); }
+
+							my_resumable(my_resumable const&) = delete;
+							my_resumable& operator=(my_resumable const&) = delete;
+
+
+
+
+
+
+
+
+
+
+
+
+							handle_type _handle;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+							my_resumable() = default;
+
+							my_resumable(handle_type h) : _handle(h) { }
+
+							~my_resumable() { if(_handle) _handle.destroy(); }
+
+							my_resumable(my_resumable const&) = delete;
+							my_resumable& operator=(my_resumable const&) = delete;
+
+							my_resumable(my_resumable&& other) : _handle(other._handle) {
+								other._handle = nullptr;
+							}
+
+							my_resumable& operator=(my_resumable&& other) {
+								_handle = other._handle;
+								other._handle = nullptr;
+							}
+
+
+
+							handle_type _handle;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+							my_resumable() = default;
+
+							my_resumable(handle_type h) : _handle(h) { }
+
+							~my_resumable() { if(_handle) _handle.destroy(); }
+
+							my_resumable(my_resumable const&) = delete;
+							my_resumable& operator=(my_resumable const&) = delete;
+
+							my_resumable(my_resumable&& other) : _handle(other._handle) {
+								other._handle = nullptr;
+							}
+
+							my_resumable& operator=(my_resumable&& other) {
+								_handle = other._handle;
+								other._handle = nullptr;
+							}
+
+							void resume() { _handle.resume(); }
+
+							handle_type _handle;
+						};
+					</script></code></pre>
+				</section>
+
+				<section>
+					<pre><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+							my_resumable() = default;
+							my_resumable(handle_type h) : _handle(h) { }
+
+							void resume() { _handle.get().resume(); }
+
+							struct deleter
+							{
+								using pointer = handle_type;
+								void operator()(pointer h){ if(h) h.destroy(); }
+							};
+
+							std::unique_ptr<handle_type, deleter> _handle;
+						};
+					</script></code></pre>
+					<p style="font-size: 70%"><code class="inline">std::coroutine_handle&lt;..&gt;</code> erfüllt NullablePointer Konzept</p>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable::promise_type">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable::promise_type
+						{
+
+
+
+
+
+
+
+
+
+
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable::promise_type">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable::promise_type
+						{
+							auto get_return_object() -> my_resumable {
+								return my_resumable(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+
+
+
+
+
+
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable::promise_type">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable::promise_type
+						{
+							auto get_return_object() -> my_resumable {
+								return my_resumable(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+							auto initial_suspend() noexcept { return std::suspend_never{}; }
+							auto final_suspend() noexcept   { return std::suspend_never{}; }
+
+
+
+
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable::promise_type">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable::promise_type
+						{
+							auto get_return_object() -> my_resumable {
+								return my_resumable(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+							auto initial_suspend() noexcept { return std::suspend_never{}; }
+							auto final_suspend() noexcept   { return std::suspend_never{}; }
+
+							void return_void() { }
+
+
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable::promise_type">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable::promise_type
+						{
+							auto get_return_object() -> my_resumable {
+								return my_resumable(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+							auto initial_suspend() noexcept { return std::suspend_never{}; }
+							auto final_suspend() noexcept   { return std::suspend_never{}; }
+
+							void return_void() { }
+
+							void unhandled_exception() { }
+						};
+					</script></code></pre>
+				</section>
+
+				<section>
+					<pre><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+							my_resumable() = default;
+							my_resumable(handle_type h) : _handle(h) { }
+
+							void resume() { _handle.get().resume(); }
+
+							struct deleter
+							{
+								using pointer = handle_type;
+								void operator()(pointer h){ if(h) h.destroy(); }
+							};
+
+							std::unique_ptr<handle_type, deleter> _handle;
+						};
+
+						struct my_resumable::promise_type
+						{
+							auto get_return_object() -> my_resumable {
+								return my_resumable(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+							auto initial_suspend() noexcept { return std::suspend_never{}; }
+							auto final_suspend() noexcept   { return std::suspend_never{}; }
+
+							void return_void() { }
+
+							void unhandled_exception() { }
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="compiler_injections">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					auto coro() -> my_resumable {
+						cout << "Hello\n";
+						co_await suspend_always{};
+						cout << "Coroutine\n";
+					}
+
+					void foo() {
+						cout << "-start-\n";
+						my_resumable r = coro();
+						cout << "-resume-\n";
+						r.resume();
+						cout << "-end-\n";
+					}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="compiler_injections">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					auto coro() -> my_resumable {
+						cout << "Hello\n";
+						co_await suspend_always{};
+						cout << "Coroutine\n";
+					}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="compiler_injections">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers="2-4"><script type="text/template">
+					auto coro() -> my_resumable {
+						auto* __context = new __coro_context{};
+						__return = __context->promise.get_return_object();
+						co_await __context->promise.initial_suspend();
+
+						cout << "Hello\n";
+						co_await suspend_always{};
+						cout << "Coroutine\n";
+					}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="compiler_injections">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers="10-12|"><script type="text/template">
+					auto coro() -> my_resumable {
+						auto* __context = new __coro_context{};
+						__return = __context->promise.get_return_object();
+						co_await __context->promise.initial_suspend();
+
+						cout << "Hello\n";
+						co_await suspend_always{};
+						cout << "Coroutine\n";
+
+					__final_suspend_label:
+						co_await __context->promise.final_suspend();
+						delete __context;
+					}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="compiler_injections">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers="10"><script type="text/template">
+					auto coro() -> my_resumable {
+						auto* __context = new __coro_context{};
+						__return = __context->promise.get_return_object();
+						co_await __context->promise.initial_suspend();
+
+						cout << "Hello\n";
+						co_await suspend_always{};
+						cout << "Coroutine\n";
+
+						co_return 42;
+
+					__final_suspend_label:
+						co_await __context->promise.final_suspend();
+						delete __context;
+					}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="compiler_injections">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers="10-11"><script type="text/template">
+					auto coro() -> my_resumable {
+						auto* __context = new __coro_context{};
+						__return = __context->promise.get_return_object();
+						co_await __context->promise.initial_suspend();
+
+						cout << "Hello\n";
+						co_await suspend_always{};
+						cout << "Coroutine\n";
+
+						__context->_promise.return_value(42);
+						goto __final_suspend_label;
+
+					__final_suspend_label:
+						co_await __context->promise.final_suspend();
+						delete __context;
+					}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable::promise_type::return_value">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable::promise_type
+						{
+							auto get_return_object() -> my_resumable {
+								return my_resumable(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+							auto initial_suspend() noexcept { return std::suspend_never{}; }
+							auto final_suspend() noexcept   { return std::suspend_never{}; }
+
+							void return_void() { }
+
+							void unhandled_exception() { }
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable::promise_type::return_value">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers="14"><script type="text/template">
+						struct my_resumable::promise_type
+						{
+							auto get_return_object() -> my_resumable {
+								return my_resumable(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+							auto initial_suspend() noexcept { return std::suspend_never{}; }
+							auto final_suspend() noexcept   { return std::suspend_never{}; }
+
+							void return_void() { }
+
+							void unhandled_exception() { }
+
+							int value;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable::promise_type::return_value">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers="11"><script type="text/template">
+						struct my_resumable::promise_type
+						{
+							auto get_return_object() -> my_resumable {
+								return my_resumable(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+							auto initial_suspend() noexcept { return std::suspend_never{}; }
+							auto final_suspend() noexcept   { return std::suspend_never{}; }
+
+							void return_void() { }
+							void return_value(int v) { value = v; }
+
+							void unhandled_exception() { }
+
+							int value;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable::get_value">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct my_resumable
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+							my_resumable() = default;
+							my_resumable(handle_type h) : _handle(h) { }
+
+							void resume() { _handle.get().resume(); }
+
+							struct deleter
+							{
+								using pointer = handle_type;
+								void operator()(pointer h){ if(h) h.destroy(); }
+							};
+
+							std::unique_ptr<handle_type, deleter> _handle;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable::get_value">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers="10"><script type="text/template">
+						struct my_resumable
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+							my_resumable() = default;
+							my_resumable(handle_type h) : _handle(h) { }
+
+							void resume() { _handle.get().resume(); }
+							int get_value() { return _handle.get().promise().value; }
+
+							struct deleter
+							{
+								using pointer = handle_type;
+								void operator()(pointer h){ if(h) h.destroy(); }
+							};
+
+							std::unique_ptr<handle_type, deleter> _handle;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_example">
+					<div style="width: 59%; display: inline-block; vertical-align: top">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					auto coro() -> my_resumable {
+						cout << "Hello\n";
+						co_await suspend_always{};
+						cout << "Coroutine\n";
+						co_return 42;
+					}
+
+					void foo() {
+						cout << "-start-\n";
+						my_resumable r = coro();
+						cout << "-resume-\n";
+						r.resume();
+						cout << "-end-\n";
+					}
+					</script></code></pre>
+					</div>
+					<div style="width:40%; display: inline-block; vertical-align: bottom">
+					</div>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="coro_example">
+					<div style="width: 59%; display: inline-block; vertical-align: top">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers="13|" data-fragment-index="1"><script type="text/template">
+					auto coro() -> my_resumable {
+						cout << "Hello\n";
+						co_await suspend_always{};
+						cout << "Coroutine\n";
+						co_return 42;
+					}
+
+					void foo() {
+						cout << "-start-\n";
+						my_resumable r = coro();
+						cout << "-resume-\n";
+						r.resume();
+						cout << "value: " << r.get_value() << "\n";
+						cout << "-end-\n";
+					}
+					</script></code></pre>
+					</div>
+					<div style="width:40%; display: inline-block; vertical-align: bottom">
+					<pre class="fragment" data-fragment-index="3"><code class="language-plaintext" style="background: rgb(30, 30, 30)" data-trim>
+					-start-
+					Hello
+					-resume-
+					Coroutine
+					value: 13279348532
+					-end-
+					</code></pre>
+					</div>
+				</section>
+
+				<section>
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers="|14-15"><script type="text/template">
+					auto coro() -> my_resumable {
+						auto* __context = new __coro_context{};
+						__return = __context->promise.get_return_object();
+						co_await __context->promise.initial_suspend();
+
+						cout << "Hello\n";
+						co_await suspend_always{};
+						cout << "Coroutine\n";
+
+						__context->_promise.return_value(42);
+						goto __final_suspend_label;
+
+					__final_suspend_label:
+						co_await __context->promise.final_suspend();
+						delete __context;
+					}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable::promise_type::final_suspend">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers="|8"><script type="text/template">
+						struct my_resumable::promise_type
+						{
+							auto get_return_object() -> my_resumable {
+								return my_resumable(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+							auto initial_suspend() noexcept { return std::suspend_never{}; }
+							auto final_suspend() noexcept   { return std::suspend_never{}; }
+
+							void return_void() { }
+							void return_value(int v) { value = v; }
+
+							void unhandled_exception() { }
+
+							int value;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="my_resumable::promise_type::final_suspend">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers="8"><script type="text/template">
+						struct my_resumable::promise_type
+						{
+							auto get_return_object() -> my_resumable {
+								return my_resumable(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+							auto initial_suspend() noexcept { return std::suspend_never{}; }
+							auto final_suspend() noexcept   { return std::suspend_always{}; }
+
+							void return_void() { }
+							void return_value(int v) { value = v; }
+
+							void unhandled_exception() { }
+
+							int value;
+						};
+					</script></code></pre>
+				</section>
+
+				<section>
+					<div style="width: 59%; display: inline-block; vertical-align: top">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					auto coro() -> my_resumable {
+						cout << "Hello\n";
+						co_await suspend_always{};
+						cout << "Coroutine\n";
+						co_return 42;
+					}
+
+					void foo() {
+						cout << "-start-\n";
+						my_resumable r = coro();
+						cout << "-resume-\n";
+						r.resume();
+						cout << "value: " << r.get_value() << "\n";
+						cout << "-end-\n";
+					}
+					</script></code></pre>
+					</div>
+					<div style="width:40%; display: inline-block; vertical-align: bottom">
+					<pre><code class="language-plaintext" style="background: rgb(30, 30, 30)" data-trim>
+					-start-
+					Hello
+					-resume-
+					Coroutine
+					value: 42
+					-end-
+					</code></pre>
+					</div>
+				</section>
+
+				<section>
+					<h3>Yielding</h3>
+				</section>
+
+				<section>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					auto find(std::vector<int> const& v, int x)
+						-> generator<int>
+					{
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								co_yield i;
+						}
+					}
+
+					void main() {
+						std::vector<int> v = {1, 3, 3, 7};
+						for(int pos : find(v, 3)){
+							std::cout << pos << std::endl;
+						}
+						return 0;
+					}
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate  data-auto-animate-id="generator">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="|1,6-7"><script type="text/template">
+						struct my_resumable
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+							my_resumable() = default;
+							my_resumable(handle_type h) : _handle(h) { }
+
+							void resume() { _handle.get().resume(); }
+
+							struct deleter
+							{
+								using pointer = handle_type;
+								void operator()(pointer h){ if(h) h.destroy(); }
+							};
+
+							std::unique_ptr<handle_type, deleter> _handle;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate  data-auto-animate-id="generator">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="1,6-7"><script type="text/template">
+						struct generator
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+							generator() = default;
+							generator(handle_type h) : _handle(h) { }
+
+							void resume() { _handle.get().resume(); }
+
+							struct deleter
+							{
+								using pointer = handle_type;
+								void operator()(pointer h){ if(h) h.destroy(); }
+							};
+
+							std::unique_ptr<handle_type, deleter> _handle;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate  data-auto-animate-id="generator">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="1|10"><script type="text/template">
+						template<class T>
+						struct generator
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+							generator() = default;
+							generator(handle_type h) : _handle(h) { }
+
+							void resume() { _handle.get().resume(); }
+
+							struct deleter
+							{
+								using pointer = handle_type;
+								void operator()(pointer h){ if(h) h.destroy(); }
+							};
+
+							std::unique_ptr<handle_type, deleter> _handle;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate  data-auto-animate-id="generator">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						template<class T>
+						struct generator
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+							generator() = default;
+							generator(handle_type h) : _handle(h) { }
+
+							struct deleter
+							{
+								using pointer = handle_type;
+								void operator()(pointer h){ if(h) h.destroy(); }
+							};
+
+							std::unique_ptr<handle_type, deleter> _handle;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate  data-auto-animate-id="generator">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="10"><script type="text/template">
+						template<class T>
+						struct generator
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+							generator() = default;
+							generator(handle_type h) : _handle(h) { }
+
+							struct iterator;
+
+							struct deleter
+							{
+								using pointer = handle_type;
+								void operator()(pointer h){ if(h) h.destroy(); }
+							};
+
+							std::unique_ptr<handle_type, deleter> _handle;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate  data-auto-animate-id="generator">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="11-12|"><script type="text/template">
+						template<class T>
+						struct generator
+						{
+							struct promise_type; // required
+							using handle_type = std::coroutine_handle<promise_type>;
+
+							generator() = default;
+							generator(handle_type h) : _handle(h) { }
+
+							struct iterator;
+							auto begin() { return iterator{_handle.get()}; }
+							auto end() -> std::default_sentinel_t { return {}; }
+
+							struct deleter
+							{
+								using pointer = handle_type;
+								void operator()(pointer h){ if(h) h.destroy(); }
+							};
+
+							std::unique_ptr<handle_type, deleter> _handle;
+						};
+					</script></code></pre>
+				</section>
+
+				<section>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="|6"><script type="text/template">
+					auto find(std::vector<int> const& v, int x)
+						-> generator<int>
+					{
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								co_yield i;
+						}
+					}
+
+					void main() {
+						std::vector<int> v = {1, 3, 3, 7};
+						for(int pos : find(v, 3)){
+							std::cout << pos << std::endl;
+						}
+						return 0;
+					}
+					</script></code></pre>
+				</section>
+
+				<section>
+					<h4 class="mic">Was macht <code class="inline">co_yield</code> eigentlich?</h4>
+					<div style="width: 45%; display: inline-block; vertical-align: top">
+					<p style="font-size: 70%">Expression</p>
+					<pre><code class="c++" data-trim data-line-numbers><script type="text/template">
+						co_yield <expr>;
+					</script></code></pre>
+					</div>
+					<div style="width:54%; display: inline-block; vertical-align: top">
+					<p style="font-size: 70%">Compiler generiert</p>
+					<pre><code class="c++" data-trim data-line-numbers><script type="text/template">
+						co_await promise.yield_value(<expr>);
+					</script></code></pre>
+					</div>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="generator::promise_type">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="|1,3-4" data-ln-start-from="2"><script type="text/template">
+						struct my_resumable::promise_type
+						{
+							auto get_return_object() -> my_resumable {
+								return my_resumable(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+							auto initial_suspend() noexcept { return std::suspend_never{}; }
+							auto final_suspend() noexcept   { return std::suspend_always{}; }
+
+							void return_void() { }
+							void return_value(int v) { value = v; }
+
+							void unhandled_exception() { }
+
+							int value;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="generator::promise_type">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="1-2,4-5|12"><script type="text/template">
+						template<class T>
+						struct generator<T>::promise_type
+						{
+							auto get_return_object() -> generator<T> {
+								return generator<T>(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+							auto initial_suspend() noexcept { return std::suspend_never{}; }
+							auto final_suspend() noexcept   { return std::suspend_always{}; }
+
+							void return_void() { }
+							void return_value(int v) { value = v; }
+
+							void unhandled_exception() { }
+
+							int value;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="generator::promise_type">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						template<class T>
+						struct generator<T>::promise_type
+						{
+							auto get_return_object() -> generator<T> {
+								return generator<T>(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+							auto initial_suspend() noexcept { return std::suspend_never{}; }
+							auto final_suspend() noexcept   { return std::suspend_always{}; }
+
+							void return_void() { }
+
+							void unhandled_exception() { }
+
+							int value;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="generator::promise_type">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="13-16|20"><script type="text/template">
+						template<class T>
+						struct generator<T>::promise_type
+						{
+							auto get_return_object() -> generator<T> {
+								return generator<T>(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+							auto initial_suspend() noexcept { return std::suspend_never{}; }
+							auto final_suspend() noexcept   { return std::suspend_always{}; }
+
+							void return_void() { }
+
+							auto yield_value(T v) -> std::suspend_always {
+								value = std::move(v);
+								return {};
+							} 
+
+							void unhandled_exception() { }
+
+							int value;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="generator::promise_type">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="20|8|9"><script type="text/template">
+						template<class T>
+						struct generator<T>::promise_type
+						{
+							auto get_return_object() -> generator<T> {
+								return generator<T>(std::coroutine_handle<promise_type>::from_promise(*this));
+							}
+
+							auto initial_suspend() noexcept { return std::suspend_never{}; }
+							auto final_suspend() noexcept   { return std::suspend_always{}; }
+
+							void return_void() { }
+
+							auto yield_value(T v) -> std::suspend_always {
+								value = std::move(v);
+								return {};
+							} 
+
+							void unhandled_exception() { }
+
+							std::optional<T> value;
+						};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate  data-auto-animate-id="generator::iterator">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					template<class T>
+					struct generator<T>::iterator
+					{
+
+
+
+
+
+
+
+
+
+
+
+					};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate  data-auto-animate-id="generator::iterator">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="14"><script type="text/template">
+					template<class T>
+					struct generator<T>::iterator
+					{
+
+
+
+
+
+
+
+
+
+
+						std::coroutine_handle<generator<T>::promise_type> handle;
+					};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate  data-auto-animate-id="generator::iterator">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="4-6"><script type="text/template">
+					template<class T>
+					struct generator<T>::iterator
+					{
+						auto operator==(std::default_sentinel_t) const -> bool {
+							return !handle || handle.done();
+						}
+
+
+
+
+
+
+
+						std::coroutine_handle<generator<T>::promise_type> handle;
+					};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate  data-auto-animate-id="generator::iterator">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="8"><script type="text/template">
+					template<class T>
+					struct generator<T>::iterator
+					{
+						auto operator==(std::default_sentinel_t) const -> bool {
+							return !handle || handle.done();
+						}
+
+						void operator++() { handle.resume(); }
+
+
+
+
+
+						std::coroutine_handle<generator<T>::promise_type> handle;
+					};
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="generator::iterator">
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers="10-12|"><script type="text/template">
+					template<class T>
+					struct generator<T>::iterator
+					{
+						auto operator==(std::default_sentinel_t) const -> bool {
+							return !handle || handle.done();
+						}
+
+						void operator++() { handle.resume(); }
+
+						auto operator*() const -> T const& {
+							return handle.promise().value.value();
+						}
+
+						std::coroutine_handle<generator<T>::promise_type> handle;
+					};
+					</script></code></pre>
+				</section>
+
+				<section>
+					<div style="width: 59%; display: inline-block; vertical-align: top">
+					<pre data-id="code"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					auto find(std::vector<int> const& v, int x)
+						-> generator<int>
+					{
+						for(int i=0; i<v.size(); ++i){
+							if(v[i] == x)
+								co_yield i;
+						}
+					}
+
+					void main() {
+						std::vector<int> v = {1, 3, 3, 7};
+						for(int pos : find(v, 3)){
+							std::cout << pos << std::endl;
+						}
+						return 0;
+					}
+					</script></code></pre>
+					</div>
+					<div style="width:40%; display: inline-block; vertical-align: bottom">
+					<pre><code class="language-plaintext" style="background: rgb(30, 30, 30)" data-trim>
+					1
+					2
+					</code></pre>
+					</div>
+				</section>
+
+				<section>
+				<h3>Fragen ?</h3>
+				</section>
+
+				<section>
+					<h3>Referenzen</h3>
+					<div class="references">
+						<ul>
+							<li><span style="font-size: 70%">CppCon 2016: James McNellis “Introduction to C++ Coroutines"</span>
+								<ul>
+									<li><a href="https://www.youtube.com/watch?v=ZTqHjjm86Bw">https://www.youtube.com/watch?v=ZTqHjjm86Bw</a></li>
+								</ul>
+							</li>
+							<li style="font-size: 70%">Coroutines (C++20) - cppreference.com
+								<ul><li><a href="https://en.cppreference.com/w/cpp/language/coroutines">https://en.cppreference.com/w/cpp/language/coroutines</a></li></ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+
+				<section>
+				<h3>Bonus Slides</h3>
+				</section>
+
+				<section>
+					<p>Anpassung von bestehenden Typen</p>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						template<typename T, typename... Args>
+						struct std::coroutine_traits<my_resumable, Args...>
+						{
+							struct promise_type;
+						};
+					</script></code></pre>
+				</section>
+
+				<section>
+					<p>Awaitable Transformation</p>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						co_await my_type{}; // evals to 'co_await <my_awaitable>'
+					</script></code></pre>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						struct promise_type
+						{
+							// ..
+
+							my_awaitable await_transform(my_type& obj);
+
+							// ..
+						};
+					</script></code></pre>
+				</section>
+
+				<section>
+					<p><code class="inline">co_await</code> operator overload</p>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+						auto operator co_await(my_type& obj) -> my_awaitable;
+					</script></code></pre>
+				</section>
+
+				<section>
+					<p>custom allocation</p>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					struct promise_type
+					{
+						void* operator new(std::size_t);
+
+						// or
+
+						template<typename FunctionArgs...>
+						void* operator new(std::size_t, FunctionArgs...);
+
+						// and to prevent std::bad_alloc (and for noexcept new)
+						auto get_return_object_on_allocation_failure();
+					};
+					</script></code></pre>
+				</section>
+
+				<section>
+					<p>stackful "emulation"</p>
+					<pre data-id="foo"><code class="c++" data-trim data-line-numbers><script type="text/template">
+					struct my_awaitable{
+						bool await_ready(){ return ptr == nullptr; }
+						void await_suspend(std::coroutine_handle<>){}
+						auto await_resume(){ return ptr != nullptr; }
+						my_handle* ptr == nullptr;
+					};
+
+					auto run(my_handle& h) -> my_awaitable {
+						h.resume();
+						return h.done() == false ? {&h} : {};
+					}
+
+					auto foo() -> my_handle {
+						// ..
+						co_await std::suspend_always{}; // or the like
+						// ..
+					}
+
+					auto bar() -> my_handle {
+						// ..
+						my_handle h = foo();
+						while(co_await run(h)){}
+						// ..
+					}
+					</script></code></pre>
+				</section>
 			</div>
 		</div>
 
@@ -31,6 +2375,11 @@
 			// - https://revealjs.com/config/
 			Reveal.initialize({
 				hash: true,
+				controls: false,
+				progress: false,
+				slideNumber: 'c/t',
+				history: true,
+				transition: 'none',
 
 				// Learn about plugins: https://revealjs.com/plugins/
 				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
